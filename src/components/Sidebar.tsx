@@ -5,11 +5,11 @@ import {
   BookOpen, 
   Terminal, 
   Settings, 
-  History, 
   MessageSquare, 
   AlertCircle,
   Menu,
-  X
+  X,
+  Download
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -22,7 +22,7 @@ const navItems = [
 ];
 
 const footerItems = [
-  { icon: History, label: 'Feedback History', id: 'feedback-history' },
+  { icon: Download, label: 'Download Desktop App', id: 'download' },
   { icon: MessageSquare, label: 'Feedback', id: 'feedback' },
 ];
 
@@ -38,11 +38,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, class
   return (
     <>
       <button 
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-md shadow-md"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-md shadow-md border border-gray-100"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
+
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-[1px] z-40 lg:hidden animate-in fade-in duration-300"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
 
       <div className={cn(
         "fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0",
@@ -77,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, class
           ))}
         </nav>
 
-        <div className="p-4 mt-auto space-y-4 border-t border-gray-100">
+        <div className="p-4 mt-auto space-y-4">
           <div className="space-y-1">
             {footerItems.map((item) => (
               <button
@@ -99,9 +107,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, class
             ))}
           </div>
 
-          <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors">
-            <span>Upgrade</span>
-          </button>
+          <div className="px-3 space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+              <span>0 of 1000 hours used</span>
+            </div>
+            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full bg-gray-400 w-0" />
+            </div>
+            <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition-colors text-sm font-bold">
+              Upgrade
+            </button>
+          </div>
+
+          <div className="px-3 pt-2 text-[10px] text-gray-400 font-medium">
+            © 2025 Hintro. Made in India 🇮🇳
+          </div>
         </div>
       </div>
     </>

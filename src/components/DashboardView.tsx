@@ -4,8 +4,8 @@ import { useUser } from '../context/UserContext';
 import { getProfile, getDashboard, getCallHistory } from '../services/api';
 import type { UserProfile, DashboardStats, CallSession } from '../types';
 import { StatsCard } from './StatsCard';
-import { format, isValid } from 'date-fns';
-import { cn } from '../lib/utils';
+import { format, isValid, formatDistanceToNow } from 'date-fns';
+import { CallItem } from './CallItem';
 
 export const DashboardView: React.FC = () => {
   const { userId } = useUser();
@@ -21,6 +21,13 @@ export const DashboardView: React.FC = () => {
     return format(date, formatStr);
   };
 
+  const formatRelativeDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    if (!isValid(date)) return '-';
+    return formatDistanceToNow(date, { addSuffix: true }).replace('about ', '');
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -28,7 +35,7 @@ export const DashboardView: React.FC = () => {
         const [profileData, statsData, callsData] = await Promise.all([
           getProfile(userId),
           getDashboard(userId),
-          getCallHistory(userId, 5)
+          getCallHistory(userId, 10)
         ]);
         setProfile(profileData);
         setStats(statsData);
@@ -60,6 +67,16 @@ export const DashboardView: React.FC = () => {
   };
 
   const isEmpty = userId === 'u1' || (stats?.total_sessions === 0 && calls.length === 0);
+
+  // Group calls by date
+  const groupedCalls = calls.reduce((groups: { [key: string]: CallSession[] }, call) => {
+    const date = safeFormatDate(call.created_at, 'MMMM do');
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(call);
+    return groups;
+  }, {});
 
   return (
     <div className="flex-1 overflow-y-auto bg-gray-50 p-8">
@@ -93,14 +110,14 @@ export const DashboardView: React.FC = () => {
           />
           <StatsCard 
             label="AI Used" 
-            value={stats?.ai_used || 0} 
+            value={`${stats?.ai_used || 0} times`} 
             icon={Sparkles} 
             iconBgColor="bg-green-50" 
             iconColor="text-green-500" 
           />
           <StatsCard 
             label="Last Session" 
-            value={safeFormatDate(stats?.last_session, 'MMM d, yyyy')} 
+            value={formatRelativeDate(stats?.last_session)} 
             icon={Calendar} 
             iconBgColor="bg-purple-50" 
             iconColor="text-purple-500" 
@@ -110,57 +127,39 @@ export const DashboardView: React.FC = () => {
         <div className="space-y-6">
           <h3 className="text-lg font-semibold text-center text-gray-800">Recent calls</h3>
           
-          <div className="bg-white rounded-2xl border border-gray-100 p-12 shadow-sm min-h-[300px] flex flex-col items-center justify-center">
+          <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm min-h-[300px]">
             {isEmpty ? (
-              <div className="text-center space-y-4 max-w-sm">
-                <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-6">
-                  <CalendarDays size={24} />
+              <div className="flex flex-col items-center justify-center h-full py-12">
+                <div className="text-center space-y-4 max-w-sm">
+                  <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-6">
+                    <CalendarDays size={24} />
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900">No Recent Calls</h4>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    Connect your Google Calendar to see upcoming meetings, get reminders, and join calls directly from Hintro.
+                  </p>
+                  <button className="mt-4 px-6 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                    Start a Call
+                  </button>
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900">No Recent Calls</h4>
-                <p className="text-gray-500 text-sm leading-relaxed">
-                  Connect your Google Calendar to see upcoming meetings, get reminders, and join calls directly from Hintro.
-                </p>
-                <button className="mt-4 px-6 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
-                  Start a Call
-                </button>
               </div>
             ) : (
-              <div className="w-full overflow-hidden">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="border-b border-gray-100">
-                      <th className="pb-4 font-semibold text-gray-600 text-sm">Session ID</th>
-                      <th className="pb-4 font-semibold text-gray-600 text-sm">Date</th>
-                      <th className="pb-4 font-semibold text-gray-600 text-sm">Duration</th>
-                      <th className="pb-4 font-semibold text-gray-600 text-sm">AI Used</th>
-                      <th className="pb-4 font-semibold text-gray-600 text-sm">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {calls.map((call) => (
-                      <tr key={call.id || Math.random()} className="group hover:bg-gray-50 transition-colors">
-                        <td className="py-4 text-sm font-medium text-gray-900">#{call.id ? call.id.slice(0, 8) : 'N/A'}</td>
-                        <td className="py-4 text-sm text-gray-500">{safeFormatDate(call.created_at, 'MMM d, HH:mm')}</td>
-                        <td className="py-4 text-sm text-gray-500">{formatDuration(call.duration || 0)}</td>
-                        <td className="py-4 text-sm text-gray-500">
-                          {call.ai_used ? (
-                            <span className="flex items-center gap-1 text-green-600">
-                              <Sparkles size={14} /> Yes
-                            </span>
-                          ) : 'No'}
-                        </td>
-                        <td className="py-4 text-sm">
-                          <span className={cn(
-                            "px-2 py-1 rounded-full text-xs font-medium",
-                            call.status === 'completed' ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
-                          )}>
-                            {call.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="space-y-8 max-w-3xl mx-auto">
+                {Object.entries(groupedCalls).map(([date, callsInGroup]) => (
+                  <div key={date} className="space-y-4">
+                    <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest px-4">{date}</h4>
+                    <div className="space-y-1">
+                      {callsInGroup.map((call, index) => (
+                        <CallItem 
+                          key={call.id}
+                          title={index % 2 === 0 ? "Design Call" : "Sales Call"}
+                          time={safeFormatDate(call.created_at, 'h:mm aa')}
+                          participantsCount={index % 3 + 1}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

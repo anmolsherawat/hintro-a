@@ -6,6 +6,7 @@ import type { UserProfile, DashboardStats, CallSession } from '../types';
 import { StatsCard } from './StatsCard';
 import { format, isValid, formatDistanceToNow } from 'date-fns';
 import { CallItem } from './CallItem';
+import { Upload, Search, FileText } from 'lucide-react';
 
 export const DashboardView: React.FC = () => {
   const { userId } = useUser();
@@ -122,6 +123,47 @@ export const DashboardView: React.FC = () => {
             iconBgColor="bg-purple-50" 
             iconColor="text-purple-500" 
           />
+        </div>
+
+        <div className="space-y-6">
+          <h3 className="text-lg font-bold text-center text-gray-800">How it works</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white p-8 rounded-2xl border border-gray-100 flex flex-col items-center text-center space-y-4 shadow-sm">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Step 1</span>
+              <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400">
+                <Upload size={24} />
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-bold text-gray-900">Upload</h4>
+                <p className="text-xs text-gray-500 leading-relaxed">Add files for your next meeting</p>
+              </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-2xl border border-gray-100 flex flex-col items-center text-center space-y-4 shadow-sm">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Step 2</span>
+              <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400">
+                <Search size={24} />
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-bold text-gray-900">Process</h4>
+                <p className="text-xs text-gray-500 leading-relaxed">AI analyzes your call content</p>
+              </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-2xl border border-gray-100 flex flex-col items-center text-center space-y-4 shadow-sm">
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Step 3</span>
+              <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400">
+                <FileText size={24} />
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-bold text-gray-900">View Insights</h4>
+                <p className="text-xs text-gray-500 leading-relaxed">Review notes and action items after the call</p>
+              </div>
+              <button className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors">
+                View Insights
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">

@@ -4,6 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
 import { FeedbackView } from './components/FeedbackView';
+import { CallInsightsView } from './components/CallInsightsView';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -12,6 +13,8 @@ const App: React.FC = () => {
     switch (activeTab) {
       case 'dashboard':
         return <DashboardView />;
+      case 'insights':
+        return <CallInsightsView />;
       case 'feedback':
       case 'feedback-history':
         return <FeedbackView />;

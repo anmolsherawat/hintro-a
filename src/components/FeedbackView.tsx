@@ -13,7 +13,13 @@ export const FeedbackView: React.FC = () => {
   useEffect(() => {
     const saved = localStorage.getItem('hintro_feedback');
     if (saved) {
-      setFeedbacks(JSON.parse(saved));
+      try {
+        const parsed = JSON.parse(saved);
+        setFeedbacks(Array.isArray(parsed) ? parsed : []);
+      } catch (e) {
+        console.error('Error parsing feedback from localStorage', e);
+        setFeedbacks([]);
+      }
     }
   }, []);
 

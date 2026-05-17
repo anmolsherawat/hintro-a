@@ -4,7 +4,7 @@ import { useUser } from '../context/UserContext';
 import { getProfile, getDashboard, getCallHistory } from '../services/api';
 import type { UserProfile, DashboardStats, CallSession } from '../types';
 import { StatsCard } from './StatsCard';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { cn } from '../lib/utils';
 
 export const DashboardView: React.FC = () => {
@@ -13,6 +13,13 @@ export const DashboardView: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [calls, setCalls] = useState<CallSession[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const safeFormatDate = (dateStr: string | null | undefined, formatStr: string) => {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    if (!isValid(date)) return '-';
+    return format(date, formatStr);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,9 +32,10 @@ export const DashboardView: React.FC = () => {
         ]);
         setProfile(profileData);
         setStats(statsData);
-        setCalls(callsData);
+        setCalls(Array.isArray(callsData) ? callsData : []);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        setCalls([]);
       } finally {
         setLoading(false);
       }
@@ -92,7 +100,7 @@ export const DashboardView: React.FC = () => {
           />
           <StatsCard 
             label="Last Session" 
-            value={stats?.last_session ? format(new Date(stats.last_session), 'MMM d, yyyy') : '-'} 
+            value={safeFormatDate(stats?.last_session, 'MMM d, yyyy')} 
             icon={Calendar} 
             iconBgColor="bg-purple-50" 
             iconColor="text-purple-500" 
@@ -130,10 +138,10 @@ export const DashboardView: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-50">
                     {calls.map((call) => (
-                      <tr key={call.id} className="group hover:bg-gray-50 transition-colors">
-                        <td className="py-4 text-sm font-medium text-gray-900">#{call.id.slice(0, 8)}</td>
-                        <td className="py-4 text-sm text-gray-500">{format(new Date(call.created_at), 'MMM d, HH:mm')}</td>
-                        <td className="py-4 text-sm text-gray-500">{formatDuration(call.duration)}</td>
+                      <tr key={call.id || Math.random()} className="group hover:bg-gray-50 transition-colors">
+                        <td className="py-4 text-sm font-medium text-gray-900">#{call.id ? call.id.slice(0, 8) : 'N/A'}</td>
+                        <td className="py-4 text-sm text-gray-500">{safeFormatDate(call.created_at, 'MMM d, HH:mm')}</td>
+                        <td className="py-4 text-sm text-gray-500">{formatDuration(call.duration || 0)}</td>
                         <td className="py-4 text-sm text-gray-500">
                           {call.ai_used ? (
                             <span className="flex items-center gap-1 text-green-600">

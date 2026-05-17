@@ -5,9 +5,19 @@ import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
 import { FeedbackView } from './components/FeedbackView';
 import { CallInsightsView } from './components/CallInsightsView';
+import { KnowledgeBaseView } from './components/KnowledgeBaseView';
+import { PromptsView } from './components/PromptsView';
+import { BoxyControlsView } from './components/BoxyControlsView';
+import { AuthView } from './components/AuthView';
+import { useUser } from './context/UserContext';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const { userId } = useUser();
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  if (!userId) {
+    return <AuthView />;
+  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -15,6 +25,12 @@ const App: React.FC = () => {
         return <DashboardView />;
       case 'insights':
         return <CallInsightsView />;
+      case 'kb':
+        return <KnowledgeBaseView />;
+      case 'prompts':
+        return <PromptsView />;
+      case 'controls':
+        return <BoxyControlsView />;
       case 'feedback':
       case 'feedback-history':
         return <FeedbackView />;
@@ -37,15 +53,21 @@ const App: React.FC = () => {
   };
 
   return (
+    <div className="flex min-h-screen bg-white font-sans antialiased text-gray-900">
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      
+      <main className="flex-1 flex flex-col lg:pl-64 min-w-0">
+        <Header />
+        {renderContent()}
+      </main>
+    </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
     <UserProvider>
-      <div className="flex min-h-screen bg-white font-sans antialiased text-gray-900">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-        
-        <main className="flex-1 flex flex-col lg:pl-64 min-w-0">
-          <Header />
-          {renderContent()}
-        </main>
-      </div>
+      <AppContent />
     </UserProvider>
   );
 };

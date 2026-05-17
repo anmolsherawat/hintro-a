@@ -7,7 +7,7 @@ import { getProfile } from '../services/api';
 import type { UserProfile } from '../types';
 
 export const Header: React.FC = () => {
-  const { userId, toggleUser } = useUser();
+  const { userId, toggleUser, logout } = useUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -15,6 +15,7 @@ export const Header: React.FC = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!userId) return;
       try {
         const data = await getProfile(userId);
         setProfile(data);
@@ -41,8 +42,8 @@ export const Header: React.FC = () => {
   };
 
   const confirmLogout = () => {
+    logout();
     setIsLogoutModalOpen(false);
-    alert('Logged out successfully (Demo)');
   };
 
   return (

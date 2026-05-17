@@ -31,6 +31,7 @@ export const DashboardView: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!userId) return;
       setLoading(true);
       try {
         const [profileData, statsData, callsData] = await Promise.all([

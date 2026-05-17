@@ -13,6 +13,7 @@ export const CallInsightsView: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!userId) return;
       setLoading(true);
       try {
         const [statsData, callsData] = await Promise.all([
